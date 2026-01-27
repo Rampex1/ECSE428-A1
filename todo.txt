@@ -2,3 +2,4 @@
 - For example, you could use a helper function to pop instead of rewriting same lines.
 2. Show AI prompts in the slides
 3. Verify everything with rubric
+4. Video
