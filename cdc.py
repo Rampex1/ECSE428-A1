@@ -1,9 +1,185 @@
+import sys
+
+
 class ComplexCalculator:
     def __init__(self):
-        pass
+        self.stack = []
 
-    def push(self, x: str):
-        pass
+    def push(self, value):
+        # Parse complex numbers by replacing 'j' notation
+        # Remove spaces for parsing
+        value_str = value.replace(" ", "")
+
+        # Handle pure imaginary like "j5" -> "0+5j"
+        if value_str.startswith("j"):
+            value_str = "0+" + value_str
+        elif value_str.startswith("-j"):
+            value_str = "0" + value_str
+
+        # Replace 'j' with 'j' for Python's complex parsing
+        # Python uses 'j' suffix, so "3+j4" needs to become "3+4j"
+        # This is tricky - we need to move the 'j' after the number
+
+        # Simple approach: use complex() with manual parsing
+        try:
+            # Try direct conversion (works for formats like "3+4j")
+            value_str = value_str.replace("j", "j")  # Already uses j
+            num = complex(value_str)
+        except ValueError:
+            # Manual parsing for "3+j4" format
+            value_str = value.replace(" ", "")
+
+            # Find 'j' and rearrange
+            if "j" in value_str:
+                # Replace +j or -j with +1j or -1j if no number after j
+                import re
+
+                # Handle cases like "3+j4" -> "3+4j"
+                value_str = re.sub(r"([+-]?)j(\d+\.?\d*)", r"\g<1>\2j", value_str)
+                # Handle cases like "3+j" or "j" -> "3+1j" or "1j"
+                value_str = re.sub(r"([+-])j(?!\d)", r"\g<1>1j", value_str)
+                value_str = re.sub(r"^j(?!\d)", "1j", value_str)
+                num = complex(value_str)
+            else:
+                num = complex(float(value_str), 0)
+
+        self.stack.append(num)
 
     def pop(self):
-        pass
+        if not self.stack:
+            return "Error: stack underflow"
+
+        value = self.stack.pop()
+        real = value.real
+        imag = value.imag
+
+        # Format as "RVAL + jIMAG" or "RVAL - jIMAG"
+        # Remove .0 for integers
+        real_str = str(int(real)) if real == int(real) else str(real)
+        imag_str = (
+            str(int(abs(imag))) if abs(imag) == int(abs(imag)) else str(abs(imag))
+        )
+
+        if imag >= 0:
+            return f"{real_str} + j{imag_str}"
+        else:
+            return f"{real_str} - j{imag_str}"
+
+    def add(self):
+        """Add top two stack values"""
+        if len(self.stack) < 2:
+            return "Error: stack underflow"
+
+        # Pop in reverse order: second operand, then first
+        b = self.stack.pop()  # Top of stack (second operand)
+        a = self.stack.pop()  # First operand
+
+        result = a + b
+        self.stack.append(result)
+
+    def sub(self):
+        """Subtract top stack value from second value"""
+        if len(self.stack) < 2:
+            return "Error: stack underflow"
+
+        b = self.stack.pop()  # Top of stack (subtrahend)
+        a = self.stack.pop()  # Second value (minuend)
+
+        result = a - b
+        self.stack.append(result)
+
+    def mul(self):
+        """Multiply top two stack values"""
+        if len(self.stack) < 2:
+            return "Error: stack underflow"
+
+        b = self.stack.pop()  # Top of stack
+        a = self.stack.pop()  # Second value
+
+        result = a * b
+        self.stack.append(result)
+
+    def div(self):
+        """Divide second stack value by top value"""
+        if len(self.stack) < 2:
+            return "Error: stack underflow"
+
+        b = self.stack.pop()  # Top of stack (divisor)
+        a = self.stack.pop()  # Second value (dividend)
+
+        # Check for division by zero
+        if b == 0:
+            return "Error: division by zero"
+
+        result = a / b
+        self.stack.append(result)
+
+    def delete(self):
+        """Delete (remove) top stack value without returning it"""
+        if len(self.stack) < 1:
+            return "Error: stack underflow"
+
+        self.stack.pop()  # Remove top element, don't return it
+
+
+def main():
+    """Command-line interface for the calculator"""
+    if len(sys.argv) < 2:
+        print("Usage: python cdc.py <command> [args] ...")
+        print("Commands: push <value>, pop, add, sub, mul, div, delete")
+        sys.exit(1)
+
+    calc = ComplexCalculator()
+    args = sys.argv[1:]
+    i = 0
+
+    while i < len(args):
+        cmd = args[i].lower()
+
+        if cmd == "push":
+            if i + 1 >= len(args):
+                print("Error: push requires a value")
+                sys.exit(1)
+            calc.push(args[i + 1])
+            i += 2
+        elif cmd == "pop":
+            result = calc.pop()
+            print(result)
+            i += 1
+        elif cmd == "add":
+            result = calc.add()
+            if result:  # If error returned
+                print(result)
+                sys.exit(1)
+            i += 1
+        elif cmd == "sub":
+            result = calc.sub()
+            if result:
+                print(result)
+                sys.exit(1)
+            i += 1
+        elif cmd == "mul":
+            result = calc.mul()
+            if result:
+                print(result)
+                sys.exit(1)
+            i += 1
+        elif cmd == "div":
+            result = calc.div()
+            if result:
+                print(result)
+                sys.exit(1)
+            i += 1
+        elif cmd == "delete":
+            result = calc.delete()
+            if result:
+                print(result)
+                sys.exit(1)
+            i += 1
+        else:
+            print(f"Error: unknown command '{cmd}'")
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
