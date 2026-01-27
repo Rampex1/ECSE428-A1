@@ -10,17 +10,11 @@ class ComplexCalculator:
         # Remove spaces for parsing
         value_str = value.replace(" ", "")
 
-        # Handle pure imaginary like "j5" -> "0+5j"
         if value_str.startswith("j"):
             value_str = "0+" + value_str
         elif value_str.startswith("-j"):
             value_str = "0" + value_str
 
-        # Replace 'j' with 'j' for Python's complex parsing
-        # Python uses 'j' suffix, so "3+j4" needs to become "3+4j"
-        # This is tricky - we need to move the 'j' after the number
-
-        # Simple approach: use complex() with manual parsing
         try:
             # Try direct conversion (works for formats like "3+4j")
             value_str = value_str.replace("j", "j")  # Already uses j
@@ -70,9 +64,8 @@ class ComplexCalculator:
         if len(self.stack) < 2:
             return "Error: stack underflow"
 
-        # Pop in reverse order: second operand, then first
-        b = self.stack.pop()  # Top of stack (second operand)
-        a = self.stack.pop()  # First operand
+        b = self.stack.pop()
+        a = self.stack.pop()
 
         result = a + b
         self.stack.append(result)
@@ -82,8 +75,8 @@ class ComplexCalculator:
         if len(self.stack) < 2:
             return "Error: stack underflow"
 
-        b = self.stack.pop()  # Top of stack (subtrahend)
-        a = self.stack.pop()  # Second value (minuend)
+        b = self.stack.pop()
+        a = self.stack.pop()
 
         result = a - b
         self.stack.append(result)
@@ -93,8 +86,8 @@ class ComplexCalculator:
         if len(self.stack) < 2:
             return "Error: stack underflow"
 
-        b = self.stack.pop()  # Top of stack
-        a = self.stack.pop()  # Second value
+        b = self.stack.pop()
+        a = self.stack.pop()
 
         result = a * b
         self.stack.append(result)
@@ -104,8 +97,8 @@ class ComplexCalculator:
         if len(self.stack) < 2:
             return "Error: stack underflow"
 
-        b = self.stack.pop()  # Top of stack (divisor)
-        a = self.stack.pop()  # Second value (dividend)
+        b = self.stack.pop()
+        a = self.stack.pop()
 
         # Check for division by zero
         if b == 0:
@@ -119,7 +112,7 @@ class ComplexCalculator:
         if len(self.stack) < 1:
             return "Error: stack underflow"
 
-        self.stack.pop()  # Remove top element, don't return it
+        self.stack.pop()
 
 
 def main():
