@@ -39,15 +39,11 @@ class ComplexCalculator:
 
         self.stack.append(num)
 
-    def pop(self):
-        if not self.stack:
-            return "Error: stack underflow"
-
-        value = self.stack.pop()
+    def _format_complex(self, value):
+        """Helper: Format complex number as 'RVAL + jIMAG' or 'RVAL - jIMAG'"""
         real = value.real
         imag = value.imag
 
-        # Format as "RVAL + jIMAG" or "RVAL - jIMAG"
         # Remove .0 for integers
         real_str = str(int(real)) if real == int(real) else str(real)
         imag_str = (
@@ -59,60 +55,67 @@ class ComplexCalculator:
         else:
             return f"{real_str} - j{imag_str}"
 
-    def add(self):
-        """Add top two stack values"""
+    def _pop_two(self):
+        """Helper: Pop two values from stack for binary operations.
+        Returns (a, b, error) where a is second-from-top, b is top.
+        If error, returns (None, None, error_message)."""
         if len(self.stack) < 2:
-            return "Error: stack underflow"
-
+            return None, None, "Error: stack underflow"
         b = self.stack.pop()
         a = self.stack.pop()
+        return a, b, None
 
-        result = a + b
-        self.stack.append(result)
+    def _pop_one(self):
+        """Helper: Pop one value from stack for unary operations.
+        Returns (value, error). If error, returns (None, error_message)."""
+        if len(self.stack) < 1:
+            return None, "Error: stack underflow"
+        return self.stack.pop(), None
+
+    def pop(self):
+        value, error = self._pop_one()
+        if error:
+            return error
+        return self._format_complex(value)
+
+    def add(self):
+        """Add top two stack values"""
+        a, b, error = self._pop_two()
+        if error:
+            return error
+        self.stack.append(a + b)
 
     def sub(self):
         """Subtract top stack value from second value"""
-        if len(self.stack) < 2:
-            return "Error: stack underflow"
-
-        b = self.stack.pop()
-        a = self.stack.pop()
-
-        result = a - b
-        self.stack.append(result)
+        a, b, error = self._pop_two()
+        if error:
+            return error
+        self.stack.append(a - b)
 
     def mul(self):
         """Multiply top two stack values"""
-        if len(self.stack) < 2:
-            return "Error: stack underflow"
-
-        b = self.stack.pop()
-        a = self.stack.pop()
-
-        result = a * b
-        self.stack.append(result)
+        a, b, error = self._pop_two()
+        if error:
+            return error
+        self.stack.append(a * b)
 
     def div(self):
         """Divide second stack value by top value"""
-        if len(self.stack) < 2:
-            return "Error: stack underflow"
-
-        b = self.stack.pop()
-        a = self.stack.pop()
+        a, b, error = self._pop_two()
+        if error:
+            return error
 
         # Check for division by zero
         if b == 0:
             return "Error: division by zero"
 
-        result = a / b
-        self.stack.append(result)
+        self.stack.append(a / b)
 
     def delete(self):
         """Delete (remove) top stack value without returning it"""
-        if len(self.stack) < 1:
-            return "Error: stack underflow"
-
-        self.stack.pop()
+        _, error = self._pop_one()
+        if error:
+            return error
 
 
 def main():
