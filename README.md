@@ -2,6 +2,10 @@
 
 A reverse Polish notation (RPN) calculator supporting real and complex numbers, built using Test-Driven Development (TDD).
 
+Created by:
+David Zhou (261135446)
+David Vo (261170038)
+
 ## Project Description
 
 This calculator implements a stack-based RPN calculator inspired by the Unix `dc` utility. It supports:
